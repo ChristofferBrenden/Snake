@@ -294,19 +294,19 @@ window.addEventListener("keydown", (event) => {
     if (!myAllowInput || myIsPaused) {
         return;
     }
-    if (isKeyLeft(event) && mySnake.rotateX != 1) {
+    if (isKeyLeft(event) && mySnake.rotateX == 0) {
         mySnake.rotateX = -1;
         mySnake.rotateY = 0;
         myAllowInput = false;
-    } else if (isKeyUp(event) && mySnake.rotateY != 1) {
+    } else if (isKeyUp(event) && mySnake.rotateY == 0) {
         mySnake.rotateX = 0;
         mySnake.rotateY = -1;
         myAllowInput = false;
-    } else if (isKeyRight(event) && mySnake.rotateX != -1) {
+    } else if (isKeyRight(event) && mySnake.rotateX == 0) {
         mySnake.rotateX = 1;
         mySnake.rotateY = 0;
         myAllowInput = false;
-    } else if (isKeyDown(event) && mySnake.rotateY != -1) {
+    } else if (isKeyDown(event) && mySnake.rotateY == 0) {
         mySnake.rotateX = 0;
         mySnake.rotateY = 1;
         myAllowInput = false;
