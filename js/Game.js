@@ -1,314 +1,304 @@
-var myCanvas;
-var myCanvasContext;
-var mySpriteImage;
-var mySnake;
-var myApple;
-var myAllowInput;
-var myHasLost;
-var myIsPaused;
-var myIsStartScreen;
-
-window.onload = () => {
-    myCanvas = document.getElementById("canvas")
-    myCanvasContext = myCanvas.getContext('2d');
-    mySpriteImage = new Image();
-    mySpriteImage.onload = () => {
-        startGame();
+class Game {
+    constructor() {
+        this.canvas = document.getElementById('canvas');
+        this.canvasContext = this.canvas.getContext('2d');
+        this.spriteImage = new Image();
+        this.spriteImage.onload = () => {
+            this.startGame();
+        }
+        this.spriteImage.src = Constants.SPRITE_IMAGE;
     }
-    mySpriteImage.src = Constants.SPRITE_IMAGE;
-}
 
-function startGame() {
-    myIsStartScreen = true;
-    gameLoop();
-}
-
-function newGame() {
-    mySnake = new Snake(myCanvas);
-    myApple = new Apple(mySnake, myCanvas);
-    myAllowInput = true;
-    myHasLost = false;
-    myIsPaused = false;
-}
-
-function gameLoop() {
-    setInterval(show, 1000 / Constants.FPS);
-}
-
-function show() {
-    if (myIsStartScreen) {
-        drawStartScreen();
-        return;
+    startGame() {
+        this.isStartScreen = true;
+        this.gameLoop();
     }
-    if (myHasLost) {
-        drawEnd();
-        return;
-    }
-    if (myIsPaused) {
-        drawPaused();
-        return;
-    }
-    myAllowInput = true;
-    update();
-    drawGame();
-}
 
-function update() {
-    myCanvasContext.clearRect(0, 0, myCanvas.width, myCanvas.height)
-    mySnake.move();
-    checkHitWall();
-    eatApple();
-    checkCollision();
-}
-
-
-function checkCollision() {
-    if (mySnake.tail.length < 5) { // Can't collision with itself if snake is shorter than 5
-        return;
+    newGame() {
+        this.snake = new Snake(this.canvas);
+        this.apple = new Apple(this.snake, this.canvas);
+        this.allowInput = true;
+        this.hasLost = false;
+        this.sPaused = false;
     }
-    var head = mySnake.tail[mySnake.tail.length - 1]
-    for (var i = 0; i < mySnake.tail.length - 4; i++) { // Can't collision with the first 4 "tails"
-        if (head.x == mySnake.tail[i].x && head.y == mySnake.tail[i].y) {
-            myHasLost = true;
+
+    gameLoop() {
+        setInterval(this.show.bind(this), 1000 / Constants.FPS);
+    }
+
+    show() {
+        if (this.isStartScreen) {
+            this.drawStartScreen();
+            return;
+        }
+        if (this.hasLost) {
+            this.drawEnd();
+            return;
+        }
+        if (this.isPaused) {
+            this.drawPaused();
+            return;
+        }
+        this.allowInput = true;
+        this.update();
+        this.drawGame();
+    }
+
+    update() {
+        this.canvasContext.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.snake.move();
+        this.checkHitWall();
+        this.eatApple();
+        this.checkCollision();
+    }
+
+    checkHitWall() {
+        if (this.snake.head.x == -this.snake.size) {
+            this.snake.head.x = this.canvas.width - this.snake.size;
+            return;
+        }
+        if (this.snake.head.x == this.canvas.width) {
+            this.snake.head.x = 0;
+            return;
+        }
+        if (this.snake.head.y == -this.snake.size) {
+            this.snake.head.y = this.canvas.height - this.snake.size;
+            return;
+        }
+        if (this.snake.head.y == this.canvas.height) {
+            this.snake.head.y = 0;
             return;
         }
     }
-}
 
-function checkHitWall() {
-    var head = mySnake.tail[mySnake.tail.length - 1]
-    if (head.x == -mySnake.size) {
-        head.x = myCanvas.width - mySnake.size;
-    } else if (head.x == myCanvas.width) {
-        head.x = 0;
-    } else if (head.y == -mySnake.size) {
-        head.y = myCanvas.height - mySnake.size;
-    } else if (head.y == myCanvas.height) {
-        head.y = 0;
-    }
-}
-
-function eatApple() {
-    if (mySnake.tail[mySnake.tail.length - 1].x == myApple.x && mySnake.tail[mySnake.tail.length - 1].y == myApple.y) {
-        mySnake.grow();
-        myApple = new Apple(mySnake, myCanvas);
-    }
-}
-
-function drawApple() {
-    drawSprite(0, 3, myApple.x, myApple.y, myApple.size);
-}
-
-function drawHead() {
-    var posX;
-    var posY;
-    var current = mySnake.tail[mySnake.tail.length - 1];
-    if (mySnake.rotateX == 1) { // Facing right
-        posX = 4;
-        posY = 0;
-    } else if (mySnake.rotateX == -1) { // Facing left
-        posX = 3;
-        posY = 1;
-    } else if (mySnake.rotateY == 1) { // Facing down
-        posX = 4;
-        posY = 1;
-    } else if (mySnake.rotateY == -1) { // Facing up
-        posX = 3;
-        posY = 0;
-    }
-    drawSprite(posX, posY, current.x, current.y, mySnake.size);
-}
-
-function drawTail() {
-    var posX;
-    var posY;
-    var current = mySnake.tail[0];
-    var next = mySnake.tail[1];
-    if ((next.x > current.x && !(current.x == 0 && next.x == (myCanvas.width - mySnake.size))) || (next.x == 0 && current.x == (myCanvas.width - mySnake.size))) { // Next tail part is to the right of current, i.e. tail is facing left
-        posX = 4;
-        posY = 2;
-    } else if ((next.x < current.x) || (next.x == (myCanvas.width - mySnake.size) && current.x == 0)) { // Next tail part is to the left of current, i.e. tail is facing right
-        posX = 3;
-        posY = 3;
-    } else if ((next.y > current.y && !(current.y == 0 && next.y == (myCanvas.height - mySnake.size))) || (next.y == 0 && current.y == (myCanvas.height - mySnake.size))) { // Next tail part is below current, i.e. tail is facing up
-        posX = 4;
-        posY = 3;
-    } else if ((next.y < current.y) || (next.y == (myCanvas.height - mySnake.size) && current.y == 0)) { // Next tail part is above current, i.e. tail is facing down
-        posX = 3;
-        posY = 2;
-    }
-    drawSprite(posX, posY, current.x, current.y, mySnake.size);
-}
-
-function drawBody(position) {
-    const maxX = myCanvas.width - mySnake.size;
-    const maxY = myCanvas.height - mySnake.size;
-    var posX;
-    var posY;
-    var current = mySnake.tail[position];
-    var next = mySnake.tail[position + 1];
-    var previous = mySnake.tail[position - 1];
-    if (next.x != current.x && current.x != previous.x) {
-        // Horizontal
-        posX = 1;
-        posY = 0;
-    } else if (next.y != current.y && current.y != previous.y) {
-        // Vertical
-        posX = 2;
-        posY = 1;
-    } else if ((((next.x > current.x && !(next.x == maxX && current.x == 0)) || (next.x == 0 && current.x == maxX)) && ((previous.y > current.y && !(current.y == 0 && previous.y == maxY)) || (current.y == maxY && previous.y == 0))) || (((previous.x > current.x && !(previous.x == maxX && current.x == 0)) || (current.x == maxX && previous.x == 0)) && ((next.y > current.y && !(next.y == maxY && current.y == 0)) || (next.y == 0 && current.y == maxY)))) {
-        // Angle bottom-right
-        posX = 0;
-        posY = 0;
-    } else if ((((next.x > current.x && !(next.x == maxX && current.x == 0)) || (next.x == 0 && current.x == maxX)) && (previous.y < current.y || (current.y == 0 && previous.y == maxY))) || (((previous.x > current.x && !(current.x == 0 && previous.x == maxX)) || (current.x == maxX && previous.x == 0)) && (next.y < current.y || (next.y == maxY && current.y == 0)))) {
-        // Angle top-right
-        posX = 0;
-        posY = 1;
-    } else if (((next.x < current.x || (next.x == maxX && current.x == 0)) && ((previous.y > current.y && !(current.y == 0 && previous.y == maxY)) || (current.y == maxY && previous.y == 0))) || ((previous.x < current.x || (previous.x == maxX && current.x == 0)) && ((next.y > current.y && !(next.y == maxY && current.y == 0)) || (next.y == 0 && current.y == maxY)))) {
-        // Angle bottom-left
-        posX = 2;
-        posY = 0;
-    } else if (((next.x < current.x || (next.x == maxX && current.x == 0)) && (previous.y < current.y || (previous.y == maxY && current.y == 0))) || ((previous.x < current.x || (previous.x == maxX && current.x == 0)) && (next.y < current.y || (next.y == maxY && current.y == 0)))) {
-        // Angle top-left
-        posX = 2;
-        posY = 2;
-    }
-    drawSprite(posX, posY, current.x, current.y, mySnake.size);
-}
-
-function drawSnake() {
-    for (var i = 0; i < mySnake.tail.length; i++) {
-        if (i == mySnake.tail.length - 1) {
-            drawHead();
-        } else if (i == 0) {
-            drawTail();
-        } else {
-            drawBody(i);
+    eatApple() {
+        if (this.snake.head.x == this.apple.x && this.snake.head.y == this.apple.y) {
+            this.snake.grow();
+            this.apple = new Apple(this.snake, this.canvas);
         }
     }
-}
 
-function drawSprite(spritePosX, spritePosY, posX, posY, size) {
-    myCanvasContext.drawImage(mySpriteImage, spritePosX * 64, spritePosY * 64, 64, 64, posX, posY, size, size)
-}
-
-function drawStartScreen() {
-    createRect(0, 0, myCanvas.width, myCanvas.height, "beige")
-    myCanvasContext.font = "20px Arial";
-    myCanvasContext.fillStyle = "Black"
-    myCanvasContext.textAlign = 'center';
-    myCanvasContext.fillText("Snake", myCanvas.width / 2, myCanvas.height / 2)
-    myCanvasContext.fillText("Press any key to start", myCanvas.width / 2, (myCanvas.height / 2) + 25)
-    myCanvasContext.fillText("Press Escape or Spacebar to pause", myCanvas.width / 2, (myCanvas.height / 2) + 50)
-    myCanvasContext.fillText("Press Enter to restart", myCanvas.width / 2, (myCanvas.height / 2) + 75)
-}
-
-function drawScreen() {
-    createRect(0, 0, myCanvas.width, myCanvas.height, "beige")
-    drawSnake();
-    drawApple();
-    myCanvasContext.font = "20px Arial";
-    myCanvasContext.fillStyle = "Black"
-}
-
-function drawCurrentScore() {
-    myCanvasContext.textAlign = 'end';
-    myCanvasContext.fillText("Score: " + calculateScore(), myCanvas.width - 10, 18)
-}
-
-function drawGame() {
-    drawScreen();
-    drawCurrentScore();
-}
-
-function drawEnd() {
-    drawScreen();
-    myCanvasContext.textAlign = 'center';
-    myCanvasContext.fillText("Game over. Final score: " + calculateScore(), myCanvas.width / 2, myCanvas.height / 2)
-    myCanvasContext.fillText("Press Enter to restart", myCanvas.width / 2, (myCanvas.height / 2) + 25)
-}
-
-function drawPaused() {
-    drawScreen();
-    drawCurrentScore();
-    myCanvasContext.textAlign = 'center';
-    myCanvasContext.fillText("Game paused", myCanvas.width / 2, myCanvas.height / 2)
-    myCanvasContext.fillText("Press Escape or Spacebar to resume", myCanvas.width / 2, (myCanvas.height / 2) + 25)
-    myCanvasContext.fillText("Press Enter to restart", myCanvas.width / 2, (myCanvas.height / 2) + 50)
-}
-
-function calculateScore() {
-    return mySnake.tail.length - 3;
-}
-
-function createRect(x, y, width, height, color) {
-    myCanvasContext.fillStyle = color;
-    myCanvasContext.fillRect(x, y, width, height);
-}
-
-function isKeyDown(event) {
-    return event.key == 'Down' || event.key == 'ArrowDown';
-}
-
-function isKeyUp(event) {
-    return event.key == 'Up' || event.key == 'ArrowUp';
-}
-
-function isKeyLeft(event) {
-    return event.key == 'Left' || event.key == 'ArrowLeft';
-}
-
-function isKeyRight(event) {
-    return event.key == 'Right' || event.key == 'ArrowRight';
-}
-
-function isKeyEnter(event) {
-    return event.key == 'Enter';
-}
-
-function isKeyEscape(event) {
-    return event.key == 'Esc' || event.key == 'Escape';
-}
-
-function isKeySpace(event) {
-    return event.key == ' ' || event.key == 'Spacebar';
-}
-
-window.addEventListener("keydown", (event) => {
-    if (myIsStartScreen) {
-        myIsStartScreen = false;
-        newGame();
-        return
+    checkCollision() {
+        if (this.snake.length < 5) { // Can't collision with itself if snake is shorter than 5
+            return;
+        }
+        for (var i = 0; i < this.snake.length - 4; i++) { // Can't collision with the first 4 "tails"
+            if (this.snake.head.x == this.snake.tail[i].x && this.snake.head.y == this.snake.tail[i].y) {
+                this.hasLost = true;
+                return;
+            }
+        }
     }
-    if (isKeyEnter(event)) {
-        newGame();
-        return
+
+    drawApple() {
+        this.drawSprite(0, 3, this.apple.x, this.apple.y, this.apple.size);
     }
-    if (myHasLost) {
-        return
+
+    drawHead() {
+        var posX;
+        var posY;
+        if (this.snake.rotateX == 1) { // Facing right
+            posX = 4;
+            posY = 0;
+        } else if (this.snake.rotateX == -1) { // Facing left
+            posX = 3;
+            posY = 1;
+        } else if (this.snake.rotateY == 1) { // Facing down
+            posX = 4;
+            posY = 1;
+        } else if (this.snake.rotateY == -1) { // Facing up
+            posX = 3;
+            posY = 0;
+        }
+        this.drawSprite(posX, posY, this.snake.head.x, this.snake.head.y, this.snake.size);
     }
-    if (isKeyEscape(event) || isKeySpace(event)) {
-        myIsPaused = !myIsPaused;
-        return;
+
+    drawTail() {
+        var posX;
+        var posY;
+        var current = this.snake.tail[0];
+        var next = this.snake.tail[1];
+        if (current.isLeftOf(next)) { // Tail is facing left
+            posX = 4;
+            posY = 2;
+        } else if (current.isRightOf(next)) { // Tail is facing right
+            posX = 3;
+            posY = 3;
+        } else if (current.isAbove(next)) { // Tail is facing up
+            posX = 4;
+            posY = 3;
+        } else if (current.isBelow(next)) { // Tail is facing down
+            posX = 3;
+            posY = 2;
+        }
+        this.drawSprite(posX, posY, current.x, current.y, this.snake.size);
     }
-    if (!myAllowInput || myIsPaused) {
-        return;
+
+    drawBody(position) {
+        var posX;
+        var posY;
+        var current = this.snake.tail[position];
+        var next = this.snake.tail[position + 1];
+        var previous = this.snake.tail[position - 1];
+        if (next.x != current.x && current.x != previous.x) { // Horizontal
+            posX = 1;
+            posY = 0;
+        } else if (next.y != current.y && current.y != previous.y) { // Vertical
+            posX = 2;
+            posY = 1;
+        } else if ((current.isAbove(previous) && current.isLeftOf(next)) || (current.isAbove(next) && current.isLeftOf(previous))) { // Angle bottom-right
+            posX = 0;
+            posY = 0;
+        } else if ((current.isBelow(previous) && current.isLeftOf(next)) || (current.isBelow(next) && current.isLeftOf(previous))) { // Angle top-right
+            posX = 0;
+            posY = 1;
+        } else if ((current.isAbove(previous) && current.isRightOf(next)) || (current.isAbove(next) && current.isRightOf(previous))) { // Angle bottom-left
+            posX = 2;
+            posY = 0;
+        } else if ((current.isBelow(previous) && current.isRightOf(next)) || (current.isBelow(next) && current.isRightOf(previous))) { // Angle top-left
+            posX = 2;
+            posY = 2;
+        }
+        this.drawSprite(posX, posY, current.x, current.y, this.snake.size);
     }
-    if (isKeyLeft(event) && mySnake.rotateX == 0) {
-        mySnake.rotateX = -1;
-        mySnake.rotateY = 0;
-        myAllowInput = false;
-    } else if (isKeyUp(event) && mySnake.rotateY == 0) {
-        mySnake.rotateX = 0;
-        mySnake.rotateY = -1;
-        myAllowInput = false;
-    } else if (isKeyRight(event) && mySnake.rotateX == 0) {
-        mySnake.rotateX = 1;
-        mySnake.rotateY = 0;
-        myAllowInput = false;
-    } else if (isKeyDown(event) && mySnake.rotateY == 0) {
-        mySnake.rotateX = 0;
-        mySnake.rotateY = 1;
-        myAllowInput = false;
+
+    drawSnake() {
+        for (var i = 0; i < this.snake.length; i++) {
+            if (i == this.snake.length - 1) {
+                this.drawHead();
+            } else if (i == 0) {
+                this.drawTail();
+            } else {
+                this.drawBody(i);
+            }
+        }
     }
-})
+
+    drawSprite(spritePosX, spritePosY, posX, posY, size) {
+        this.canvasContext.drawImage(this.spriteImage, spritePosX * Constants.SPRITE_PIXEL_SIZE, spritePosY * Constants.SPRITE_PIXEL_SIZE, Constants.SPRITE_PIXEL_SIZE, Constants.SPRITE_PIXEL_SIZE, posX, posY, size, size);
+    }
+
+    drawStartScreen() {
+        this.createRect(0, 0, this.canvas.width, this.canvas.height, 'beige')
+        this.canvasContext.font = '20px Arial';
+        this.canvasContext.fillStyle = 'Black'
+        this.canvasContext.textAlign = 'center';
+        this.canvasContext.fillText('Snake', this.canvas.width / 2, this.canvas.height / 2)
+        this.canvasContext.fillText('Press any key to start', this.canvas.width / 2, (this.canvas.height / 2) + 25)
+        this.canvasContext.fillText('Press Escape or Spacebar to pause', this.canvas.width / 2, (this.canvas.height / 2) + 50)
+        this.canvasContext.fillText('Press Enter to restart', this.canvas.width / 2, (this.canvas.height / 2) + 75)
+    }
+
+    drawScreen() {
+        this.createRect(0, 0, this.canvas.width, this.canvas.height, 'beige')
+        this.drawSnake();
+        this.drawApple();
+        this.canvasContext.font = '20px Arial';
+        this.canvasContext.fillStyle = 'Black'
+    }
+
+    drawCurrentScore() {
+        this.canvasContext.textAlign = 'end';
+        this.canvasContext.fillText('Score: ' + this.score, this.canvas.width - 10, 18)
+    }
+
+    drawGame() {
+        this.drawScreen();
+        this.drawCurrentScore();
+    }
+
+    drawEnd() {
+        this.drawScreen();
+        this.canvasContext.textAlign = 'center';
+        this.canvasContext.fillText('Game over. Final score: ' + this.score, this.canvas.width / 2, this.canvas.height / 2)
+        this.canvasContext.fillText('Press Enter to restart', this.canvas.width / 2, (this.canvas.height / 2) + 25)
+    }
+
+    drawPaused() {
+        this.drawScreen();
+        this.drawCurrentScore();
+        this.canvasContext.textAlign = 'center';
+        this.canvasContext.fillText('Game paused', this.canvas.width / 2, this.canvas.height / 2)
+        this.canvasContext.fillText('Press Escape or Spacebar to resume', this.canvas.width / 2, (this.canvas.height / 2) + 25)
+        this.canvasContext.fillText('Press Enter to restart', this.canvas.width / 2, (this.canvas.height / 2) + 50)
+    }
+
+    get score() {
+        return this.snake.length - 3; // Game starts with length 3
+    }
+
+    createRect(x, y, width, height, color) {
+        this.canvasContext.fillStyle = color;
+        this.canvasContext.fillRect(x, y, width, height);
+    }
+
+    handleInput(event) {
+        if (this.isStartScreen) {
+            this.isStartScreen = false;
+            this.newGame();
+            return
+        }
+        if (this.isKeyEnter(event)) {
+            this.newGame();
+            return
+        }
+        if (this.hasLost) {
+            return
+        }
+        if (this.isKeyEscape(event) || this.isKeySpace(event)) {
+            this.isPaused = !this.isPaused;
+            return;
+        }
+        if (!this.allowInput || this.isPaused) {
+            return;
+        }
+        if (this.isKeyLeft(event) && this.snake.rotateX == 0) {
+            this.snake.moveLeft();
+            this.allowInput = false;
+            return;
+        }
+        if (this.isKeyRight(event) && this.snake.rotateX == 0) {
+            this.snake.moveRight();
+            this.allowInput = false;
+            return;
+        }
+        if (this.isKeyUp(event) && this.snake.rotateY == 0) {
+            this.snake.moveUp();
+            this.allowInput = false;
+            return;
+        }
+        if (this.isKeyDown(event) && this.snake.rotateY == 0) {
+            this.snake.moveDown();
+            this.allowInput = false;
+            return;
+        }
+    }
+
+    isKeyDown(event) {
+        return event.key == 'Down' || event.key == 'ArrowDown';
+    }
+
+    isKeyUp(event) {
+        return event.key == 'Up' || event.key == 'ArrowUp';
+    }
+
+    isKeyLeft(event) {
+        return event.key == 'Left' || event.key == 'ArrowLeft';
+    }
+
+    isKeyRight(event) {
+        return event.key == 'Right' || event.key == 'ArrowRight';
+    }
+
+    isKeyEnter(event) {
+        return event.key == 'Enter';
+    }
+
+    isKeyEscape(event) {
+        return event.key == 'Esc' || event.key == 'Escape';
+    }
+
+    isKeySpace(event) {
+        return event.key == ' ' || event.key == 'Spacebar';
+    }
+}
