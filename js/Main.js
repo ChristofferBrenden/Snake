@@ -1,9 +1,7 @@
-var myGame;
-
 window.onload = () => {
-    myGame = new Game();
-};
+    var game = new Game();
 
-window.addEventListener("keydown", (event) => {
-    myGame.handleInput(event);
-});
+    window.addEventListener("keydown", (event) => {
+        game.handleInput(event);
+    });
+};
