@@ -1,4 +1,4 @@
 const Constants = {
-    FPS: 2,
+    FPS: 8,
     SPRITE_IMAGE: './snake-graphics.png'
 }
