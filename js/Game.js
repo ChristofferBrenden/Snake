@@ -207,35 +207,38 @@ function drawScreen() {
     createRect(0, 0, myCanvas.width, myCanvas.height, "beige")
     drawSnake();
     drawApple();
+    myCanvasContext.font = "20px Arial";
+    myCanvasContext.fillStyle = "Black"
+}
+
+function drawCurrentScore() {
+    myCanvasContext.textAlign = 'end';
+    myCanvasContext.fillText("Score: " + calculateScore(), myCanvas.width - 10, 18)
 }
 
 function drawGame() {
     drawScreen();
-    myCanvasContext.font = "20px Arial";
-    myCanvasContext.fillStyle = "Black"
-    myCanvasContext.textAlign = 'end';
-    myCanvasContext.fillText("Score: " + (mySnake.tail.length - 1), myCanvas.width - 10, 18)
+    drawCurrentScore();
 }
 
 function drawEnd() {
     drawScreen();
-    myCanvasContext.font = "20px Arial";
-    myCanvasContext.fillStyle = "Black"
     myCanvasContext.textAlign = 'center';
-    myCanvasContext.fillText("Game over. Final score: " + (mySnake.tail.length - 1), myCanvas.width / 2, myCanvas.height / 2)
+    myCanvasContext.fillText("Game over. Final score: " + calculateScore(), myCanvas.width / 2, myCanvas.height / 2)
     myCanvasContext.fillText("Press Enter to restart", myCanvas.width / 2, (myCanvas.height / 2) + 25)
 }
 
 function drawPaused() {
     drawScreen();
-    myCanvasContext.font = "20px Arial";
-    myCanvasContext.fillStyle = "Black"
-    myCanvasContext.textAlign = 'end';
-    myCanvasContext.fillText("Score: " + (mySnake.tail.length - 1), myCanvas.width - 10, 18)
+    drawCurrentScore();
     myCanvasContext.textAlign = 'center';
     myCanvasContext.fillText("Game paused", myCanvas.width / 2, myCanvas.height / 2)
     myCanvasContext.fillText("Press Escape or Spacebar to resume", myCanvas.width / 2, (myCanvas.height / 2) + 25)
     myCanvasContext.fillText("Press Enter to restart", myCanvas.width / 2, (myCanvas.height / 2) + 50)
+}
+
+function calculateScore() {
+    return mySnake.tail.length - 3;
 }
 
 function createRect(x, y, width, height, color) {
