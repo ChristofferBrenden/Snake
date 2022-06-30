@@ -1,9 +1,9 @@
 class Tail {
     constructor(x, y, size, canvas) {
-        this.x = x; // 260
-        this.y = y; // 120
-        this.maxX = canvas.width - size; // 380
-        this.maxY = canvas.height - size; // 380
+        this.x = x;
+        this.y = y;
+        this.maxX = canvas.width - size;
+        this.maxY = canvas.height - size;
     }
 
     isLeftOf(other) {
