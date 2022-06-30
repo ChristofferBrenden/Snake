@@ -3,7 +3,7 @@ class Apple {
         this.size = snake.size;
         var hasFoundEmptySpace = false
         while(!hasFoundEmptySpace) {
-            hasFoundEmptySpace = findEmptySpace(snake, canvas);
+            hasFoundEmptySpace = this.findEmptySpace(snake, canvas);
         }
     }
 
