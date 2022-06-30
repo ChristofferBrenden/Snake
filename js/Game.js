@@ -74,6 +74,7 @@ class Game {
     eatApple() {
         if (this.snake.head.x == this.apple.x && this.snake.head.y == this.apple.y) {
             this.snake.grow();
+            // TODO Check if snake filled entire screen = win
             this.apple = new Apple(this.snake, this.canvas);
         }
     }
